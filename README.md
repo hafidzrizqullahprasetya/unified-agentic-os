@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IDENTITAS PROYEK
+**Nama Project:** Unified-Agentic-OS
+**Peran:** AI Business Architect & Agentic Workflow Engineer
+**Tujuan:** Membangun platform "Service-as-a-Software" (SaaS) yang menyatukan Retail (Jual Barang), Service (Jasa/Booking), dan SaaS (Langganan) dalam satu sistem operasi cerdas yang digerakkan oleh AI.
 
-## Getting Started
+# TECH STACK (WAJIB PATUH)
+- **Framework:** Next.js (App Router)
+- **Backend Logic:** Hono (berjalan di Next.js API Routes)
+- **Bahasa:** TypeScript (Strict Mode)
+- **Database:** PostgreSQL (via Supabase/Neon)
+- **ORM:** Drizzle ORM (Single Schema Approach)
+- **AI Engine:** Vercel AI SDK (Core, RSC, UI)
+- **Styling:** Tailwind CSS + shadcn/ui (Mobile First)
+- **Validasi:** Zod (Wajib digunakan untuk AI Structured Outputs)
 
-First, run the development server:
+# ATURAN ARSITEKTUR (KRUSIAL)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 1. Database Terpadu (Polymorphic)
+KITA TIDAK MEMISAHKAN TABEL untuk Retail vs Service. Gunakan strategi schema tunggal yang fleksibel.
+- **Tabel `products`**: Wajib memiliki kolom enum `type` (`'GOODS'`, `'SERVICE'`, `'PLAN'`).
+- **Logika Bisnis**:
+  - Jika `type = 'GOODS'` (Barang): Gunakan kolom `stock` & manajemen inventori (FIFO).
+  - Jika `type = 'SERVICE'` (Jasa): Gunakan kolom `duration_minutes` & cek ketersediaan jadwal.
+  - Jika `type = 'PLAN'` (Langganan): Gunakan kolom `billing_cycle`.
+- **Tabel `orders`**: Menangani transaksi pembelian barang DAN booking jasa dalam satu tabel.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 2. Agentic Workflow (AI sebagai Pekerja)
+- **Bukan Chatbot Biasa:** Kita membangun *Agent* yang melakukan tindakan nyata (Action), bukan sekadar ngobrol.
+- **Output Terstruktur (JSON):** JANGAN PERNAH meminta AI memberikan teks mentah jika menyangkut data. SELALU gunakan `generateObject` dengan schema Zod untuk mengekstrak JSON dari input user (Contoh: Parsing chat WA "Laku 5 kapal selam" menjadi Object Transaksi).
+- **Tool Calling:** Gunakan `streamUI` atau `toolCall` untuk mengeksekusi logika backend (seperti `cekStok`, `buatBooking`, `hitungSettlement`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 3. Struktur Direktori (Berbasis Domain)
+Letakkan logika bisnis di dalam folder `src/core/`, BUKAN di komponen UI.
+- `src/core/inventory/*` -> Logika stok, HPP, Resep.
+- `src/core/finance/*` -> Logika settlement harian, hitung profit, webhook Midtrans.
+- `src/core/crm/*` -> Logika pelanggan & riwayat order.
+- `src/app/api/[[...route]]/route.ts` -> Pintu masuk utama Hono.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# STANDAR KODING
 
-## Learn More
+1.  **Pendekatan Fungsional:** Lebih utamakan fungsi murni (pure functions) daripada Class OOP yang berat.
+2.  **Type Safety:** Dilarang pakai `any`. Gunakan `zod` untuk memvalidasi semua input (baik dari API maupun dari halusinasi AI).
+3.  **Mobile-First UI:** Semua komponen shadcn harus responsif. Ingat, user utama (Mama/Owner) mengakses lewat HP (PWA).
+4.  **Konteks Lokal (Indonesia):**
+    - Mata Uang: IDR (Rp). Format menggunakan `Intl.NumberFormat('id-ID')`.
+    - Waktu: WIB (Asia/Jakarta).
+    - Pembayaran: Logika Midtrans (QRIS, VA).
 
-To learn more about Next.js, take a look at the following resources:
+# CONTOH LOGIKA BISNIS (KONTEKS)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Aturan Settlement Harian:** Jika omzet harian < Target (misal Rp 150.000), sistem menandai "DEFICIT" (Minta talangan). Jika > Target, sistem menandai "SURPLUS" (Simpan selisihnya).
+- **Alur Kerja (Workflow):** Input (Voice Note/Chat WA) -> AI Parsing (Zod) -> API Hono -> Update Database Drizzle -> Notifikasi Balasan WA.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# PHASE 1 ACTION PLAN (MULAI DI SINI)
+Jalankan action plan 14 hari untuk memahami OpenClaw & merencanakan arsitektur:
 
-## Deploy on Vercel
+👉 **[Phase 1 Action Plan](./PHASE-1-ACTION-PLAN.md)** - Panduan konkret hari demi hari (Durasi: 2 minggu)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Dokumen ini berisi:
+- Day 1-2: Baca research briefs & architecture analysis
+- Day 3-4: Pelajari 5 patterns dari OpenClaw
+- Day 5-7: Strategi kompetitif & innovations
+- Day 8-14: Desain ARCHITECTURE.md, schema database, API endpoints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# RESEARCH & DOCUMENTATION
+Lihat folder `/docs/research/` untuk dokumentasi lengkap:
+- **QUICK-START.md** - Jawaban cepat (5 min)
+- **02-OpenClaw-Architecture-Analysis.md** - Analisis mendalam (60 min)
+- **03-Strategy-Innovation.md** - Strategi proyek (50 min)
+- **04-Implementation-Checklist.md** - Roadmap 35 minggu
+- **05-Clone-OpenClaw-Guide.md** - Panduan implementasi
+
+👉 **[Baca Research Docs](./docs/research/_index.md)**
+
+# INSTRUKSI UNTUK AI ASSISTANT
+Bertindaklah sebagai "Senior Architect". Saat saya meminta kode, jangan langsung berikan sintaks mentah.
+1.  Cek dulu ini masuk "Domain Bisnis" mana (Retail/Service?).
+2.  Definisikan Schema Zod-nya terlebih dahulu.
+3.  Tulis Logika Bisnisnya di `src/core`.
+4.  Baru sambungkan ke Endpoint Hono atau AI Tool.
+5.  Referensi `/docs/research/` untuk architectural decisions dan patterns.
