@@ -5,9 +5,9 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch src/server-node.ts",
     "build": "tsc && tsc --noEmit",
-    "start": "node dist/main.js",
+    "start": "node dist/server-node.js",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "lint": "eslint src --ext .ts",
