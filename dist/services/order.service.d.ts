@@ -10,7 +10,10 @@ export declare class OrderService {
         }[];
         status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
         id: number;
+        created_at: Date;
+        updated_at: Date;
         store_id: number;
+        metadata: unknown;
         customer_id: number;
         order_number: string;
         total_amount: string;
@@ -19,9 +22,6 @@ export declare class OrderService {
         discount_amount: string | null;
         notes: string | null;
         channel: "whatsapp" | "telegram" | "web" | "mobile" | "api";
-        metadata: unknown;
-        created_at: Date;
-        updated_at: Date;
     }>;
     getOrder(storeId: number, orderId: number): Promise<{
         items: {
@@ -36,7 +36,10 @@ export declare class OrderService {
         }[];
         status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
         id: number;
+        created_at: Date;
+        updated_at: Date;
         store_id: number;
+        metadata: unknown;
         customer_id: number;
         order_number: string;
         total_amount: string;
@@ -45,14 +48,14 @@ export declare class OrderService {
         discount_amount: string | null;
         notes: string | null;
         channel: "whatsapp" | "telegram" | "web" | "mobile" | "api";
-        metadata: unknown;
-        created_at: Date;
-        updated_at: Date;
     }>;
     listOrders(storeId: number, customerId?: number, limit?: number, offset?: number): Promise<{
         status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
         id: number;
+        created_at: Date;
+        updated_at: Date;
         store_id: number;
+        metadata: unknown;
         customer_id: number;
         order_number: string;
         total_amount: string;
@@ -61,14 +64,14 @@ export declare class OrderService {
         discount_amount: string | null;
         notes: string | null;
         channel: "whatsapp" | "telegram" | "web" | "mobile" | "api";
-        metadata: unknown;
-        created_at: Date;
-        updated_at: Date;
     }[]>;
     updateOrderStatus(storeId: number, orderId: number, data: UpdateOrderStatusInput): Promise<{
         status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
         id: number;
+        created_at: Date;
+        updated_at: Date;
         store_id: number;
+        metadata: unknown;
         customer_id: number;
         order_number: string;
         total_amount: string;
@@ -77,14 +80,14 @@ export declare class OrderService {
         discount_amount: string | null;
         notes: string | null;
         channel: "whatsapp" | "telegram" | "web" | "mobile" | "api";
-        metadata: unknown;
-        created_at: Date;
-        updated_at: Date;
     }>;
     cancelOrder(storeId: number, orderId: number): Promise<{
         status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
         id: number;
+        created_at: Date;
+        updated_at: Date;
         store_id: number;
+        metadata: unknown;
         customer_id: number;
         order_number: string;
         total_amount: string;
@@ -93,9 +96,6 @@ export declare class OrderService {
         discount_amount: string | null;
         notes: string | null;
         channel: "whatsapp" | "telegram" | "web" | "mobile" | "api";
-        metadata: unknown;
-        created_at: Date;
-        updated_at: Date;
     }>;
     private generateOrderNumber;
 }

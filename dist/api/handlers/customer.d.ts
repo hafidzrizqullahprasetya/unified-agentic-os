@@ -4,13 +4,13 @@ export declare function createCustomer(c: Context): Promise<Response & import("h
     data: {
         name: string;
         id: number;
+        email: string | null;
+        phone: string;
+        created_at: string;
+        updated_at: string;
         city: string | null;
         province: string | null;
         postal_code: string | null;
-        created_at: string;
-        updated_at: string;
-        email: string | null;
-        phone: string;
         store_id: number;
         address: string | null;
         metadata: import("hono/utils/types").JSONValue;
@@ -21,13 +21,13 @@ export declare function getCustomer(c: Context): Promise<Response & import("hono
     data: {
         name: string;
         id: number;
+        email: string | null;
+        phone: string;
+        created_at: string;
+        updated_at: string;
         city: string | null;
         province: string | null;
         postal_code: string | null;
-        created_at: string;
-        updated_at: string;
-        email: string | null;
-        phone: string;
         store_id: number;
         address: string | null;
         metadata: import("hono/utils/types").JSONValue;
@@ -38,13 +38,13 @@ export declare function listCustomers(c: Context): Promise<Response & import("ho
     data: {
         name: string;
         id: number;
+        email: string | null;
+        phone: string;
+        created_at: string;
+        updated_at: string;
         city: string | null;
         province: string | null;
         postal_code: string | null;
-        created_at: string;
-        updated_at: string;
-        email: string | null;
-        phone: string;
         store_id: number;
         address: string | null;
         metadata: import("hono/utils/types").JSONValue;
@@ -59,13 +59,13 @@ export declare function updateCustomer(c: Context): Promise<Response & import("h
     data: {
         name: string;
         id: number;
+        email: string | null;
+        phone: string;
+        created_at: string;
+        updated_at: string;
         city: string | null;
         province: string | null;
         postal_code: string | null;
-        created_at: string;
-        updated_at: string;
-        email: string | null;
-        phone: string;
         store_id: number;
         address: string | null;
         metadata: import("hono/utils/types").JSONValue;
@@ -77,13 +77,13 @@ export declare function deleteCustomer(c: Context): Promise<Response & import("h
     data: {
         name: string;
         id: number;
+        email: string | null;
+        phone: string;
+        created_at: string;
+        updated_at: string;
         city: string | null;
         province: string | null;
         postal_code: string | null;
-        created_at: string;
-        updated_at: string;
-        email: string | null;
-        phone: string;
         store_id: number;
         address: string | null;
         metadata: import("hono/utils/types").JSONValue;
