@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
-import { getDb } from '@/db/config';
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db/config";
 import {
   orders,
   order_items,
@@ -8,18 +8,31 @@ import {
   customers,
   products,
   product_variants,
-} from '@/db/schema';
-import { NotFoundError, ForbiddenError, InventoryError, ErrorCode } from '@/lib/errors';
-import type { CreateOrderInput, UpdateOrderStatusInput } from '@/lib/validation';
+} from "@/db/schema";
+import {
+  NotFoundError,
+  ForbiddenError,
+  InventoryError,
+  ErrorCode,
+} from "@/lib/errors";
+import type {
+  CreateOrderInput,
+  UpdateOrderStatusInput,
+} from "@/lib/validation";
+import { inventoryService } from "@/services/inventory.service";
 
 export class OrderService {
-  async createOrder(storeId: number, customerId: number, data: CreateOrderInput) {
+  async createOrder(
+    storeId: number,
+    customerId: number,
+    data: CreateOrderInput,
+  ) {
     const db = getDb();
 
     // Verify store and customer exist
     const store = await db.select().from(stores).where(eq(stores.id, storeId));
     if (!store.length) {
-      throw new NotFoundError('Store', storeId);
+      throw new NotFoundError("Store", storeId);
     }
 
     const customer = await db
@@ -27,7 +40,7 @@ export class OrderService {
       .from(customers)
       .where(eq(customers.id, customerId));
     if (!customer.length || customer[0].store_id !== storeId) {
-      throw new NotFoundError('Customer', customerId);
+      throw new NotFoundError("Customer", customerId);
     }
 
     // Calculate totals
@@ -41,7 +54,7 @@ export class OrderService {
         .where(eq(products.id, item.product_id));
 
       if (!product.length || product[0].store_id !== storeId) {
-        throw new NotFoundError('Product', item.product_id);
+        throw new NotFoundError("Product", item.product_id);
       }
 
       const unitPrice = parseFloat(product[0].price);
@@ -69,7 +82,7 @@ export class OrderService {
         order_number: orderNumber,
         total_amount: String(totalAmount),
         notes: data.notes,
-        channel: data.channel || 'web',
+        channel: data.channel || "web",
       })
       .returning();
 
@@ -83,11 +96,35 @@ export class OrderService {
       });
     }
 
+    // Reserve inventory for the order
+    try {
+      const reservationItems = data.items
+        .filter((item) => item.product_variant_id)
+        .map((item) => ({
+          product_variant_id: item.product_variant_id as number,
+          quantity: item.quantity,
+        }));
+      if (reservationItems.length > 0) {
+        await inventoryService.reserveStock(
+          order.id,
+          reservationItems,
+          storeId,
+        );
+      }
+    } catch (error) {
+      // If inventory reservation fails, cancel the order we just created
+      await db
+        .update(orders)
+        .set({ status: "cancelled" })
+        .where(eq(orders.id, order.id));
+      throw error;
+    }
+
     // Record initial status
     await db.insert(order_status_history).values({
       order_id: order.id,
-      to_status: 'pending',
-      notes: 'Order created',
+      to_status: "pending",
+      notes: "Order created",
     });
 
     return {
@@ -99,18 +136,15 @@ export class OrderService {
   async getOrder(storeId: number, orderId: number) {
     const db = getDb();
 
-    const result = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, orderId));
+    const result = await db.select().from(orders).where(eq(orders.id, orderId));
 
     if (!result.length) {
-      throw new NotFoundError('Order', orderId);
+      throw new NotFoundError("Order", orderId);
     }
 
     const order = result[0];
     if (order.store_id !== storeId) {
-      throw new ForbiddenError('You do not have access to this order');
+      throw new ForbiddenError("You do not have access to this order");
     }
 
     // Get order items
@@ -125,14 +159,21 @@ export class OrderService {
     };
   }
 
-  async listOrders(storeId: number, customerId?: number, limit = 50, offset = 0) {
+  async listOrders(
+    storeId: number,
+    customerId?: number,
+    limit = 50,
+    offset = 0,
+  ) {
     const db = getDb();
 
     if (customerId) {
       return await db
         .select()
         .from(orders)
-        .where(eq(orders.store_id, storeId) && eq(orders.customer_id, customerId))
+        .where(
+          eq(orders.store_id, storeId) && eq(orders.customer_id, customerId),
+        )
         .limit(limit)
         .offset(offset);
     }
@@ -145,7 +186,11 @@ export class OrderService {
       .offset(offset);
   }
 
-  async updateOrderStatus(storeId: number, orderId: number, data: UpdateOrderStatusInput) {
+  async updateOrderStatus(
+    storeId: number,
+    orderId: number,
+    data: UpdateOrderStatusInput,
+  ) {
     const db = getDb();
 
     // Verify order exists and belongs to store
@@ -177,13 +222,21 @@ export class OrderService {
     // Verify order exists and belongs to store
     const order = await this.getOrder(storeId, orderId);
 
-    if (order.status === 'cancelled' || order.status === 'delivered') {
+    if (order.status === "cancelled" || order.status === "delivered") {
       throw new Error(`Cannot cancel order with status: ${order.status}`);
     }
 
+    // Release reservations for this order
+    const reservations = await inventoryService.getOrderReservations(orderId);
+    for (const reservation of reservations) {
+      if (!reservation.released_at) {
+        await inventoryService.releaseReservation(reservation.id, storeId);
+      }
+    }
+
     return this.updateOrderStatus(storeId, orderId, {
-      status: 'cancelled',
-      notes: 'Cancelled by seller',
+      status: "cancelled",
+      notes: "Cancelled by seller",
     });
   }
 

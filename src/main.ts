@@ -308,6 +308,38 @@ app.post("/api/payments/webhook/midtrans", async (c) => {
   return midtransWebhook(c);
 });
 
+// Inventory routes
+app.get("/api/stores/:storeId/inventory/products/:variantId", async (c) => {
+  const { getInventoryHandler } = await import("@/api/handlers/inventory");
+  return getInventoryHandler(c);
+});
+
+app.post("/api/stores/:storeId/inventory/reserve", async (c) => {
+  const { reserveStockHandler } = await import("@/api/handlers/inventory");
+  return reserveStockHandler(c);
+});
+
+app.post("/api/stores/:storeId/inventory/adjust", async (c) => {
+  const { adjustInventoryHandler } = await import("@/api/handlers/inventory");
+  return adjustInventoryHandler(c);
+});
+
+app.get("/api/stores/:storeId/inventory/movements", async (c) => {
+  const { getMovementsHandler } = await import("@/api/handlers/inventory");
+  return getMovementsHandler(c);
+});
+
+app.post("/api/stores/:storeId/inventory/release/:reservationId", async (c) => {
+  const { releaseReservationHandler } =
+    await import("@/api/handlers/inventory");
+  return releaseReservationHandler(c);
+});
+
+app.get("/api/stores/:storeId/inventory/low-stock", async (c) => {
+  const { checkLowStockHandler } = await import("@/api/handlers/inventory");
+  return checkLowStockHandler(c);
+});
+
 // Start server
 const env = getEnv();
 export default {
