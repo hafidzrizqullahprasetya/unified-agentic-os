@@ -351,6 +351,26 @@ app.get("/api/stores/:storeId/inventory/low-stock", async (c) => {
   return checkLowStockHandler(c);
 });
 
+// AI Agent routes
+app.post("/api/agent/chat", authMiddleware, async (c) => {
+  const { agentChat } = await import("@/api/handlers/agent");
+  return agentChat(c);
+});
+
+app.get("/api/agent/history/:conversationId", authMiddleware, async (c) => {
+  const { getConversationHistory } = await import("@/api/handlers/agent");
+  return getConversationHistory(c);
+});
+
+app.delete(
+  "/api/agent/conversation/:conversationId",
+  authMiddleware,
+  async (c) => {
+    const { clearConversation } = await import("@/api/handlers/agent");
+    return clearConversation(c);
+  },
+);
+
 // Start server
 const env = getEnv();
 export default {

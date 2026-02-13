@@ -26,6 +26,12 @@ const envSchema = z.object({
   // Telegram (optional for future)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
 
+  // AI LLM Providers (for Agent)
+  ANTHROPIC_API_KEY: z.string().optional(),
+  OPENAI_API_KEY: z.string().optional(),
+  LLAMA_API_KEY: z.string().optional(),
+  LLAMA_BASE_URL: z.string().optional(),
+
   // Admin
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z

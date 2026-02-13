@@ -17,12 +17,17 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.43",
+    "@ai-sdk/openai": "^3.0.28",
+    "@anthropic-ai/sdk": "^0.74.0",
+    "ai": "^6.0.85",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.0",
     "drizzle-orm": "^0.30.0",
     "hono": "^4.0.0",
     "jsonwebtoken": "^9.0.0",
     "midtrans-client": "^1.4.3",
+    "openai": "^6.21.0",
     "postgres": "^3.4.0",
     "zod": "^3.22.0"
   },
