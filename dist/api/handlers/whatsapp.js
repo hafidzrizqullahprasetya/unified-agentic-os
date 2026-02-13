@@ -99,55 +99,40 @@ export async function whatsappWebhookReceive(c) {
 /**
  * Asynchronous message handler
  * This runs after returning 200 OK to Meta
+ * Routes message through AI Agent for intelligent handling
  */
 async function handleMessageAsync(storeId, customerId, message) {
     if (!message)
         return;
-    const { WhatsAppParser } = await import("@/lib/whatsapp-parser");
-    const parser = new WhatsAppParser();
+    const db = getDb();
+    const customer = await db
+        .select()
+        .from(customers)
+        .where(eq(customers.id, customerId));
+    if (!customer.length)
+        return;
     try {
-        // Route message to appropriate handler
-        if (parser.isMenuRequest(message.text)) {
-            await handleMenuRequest(storeId, customerId, message);
-        }
-        else if (parser.isOrderRequest(message.text)) {
-            await handleOrderRequest(storeId, customerId, message);
-        }
-        else if (parser.isStatusRequest(message.text)) {
-            await handleStatusRequest(storeId, customerId, message);
-        }
-        else {
-            // Unknown request - send help message
-            const db = getDb();
-            const customer = await db
-                .select()
-                .from(customers)
-                .where(eq(customers.id, customerId));
-            if (customer.length > 0) {
-                await whatsAppService.sendMessage(customer[0].phone, "Maaf, saya tidak mengerti. Ketik *menu* untuk melihat katalog produk kami.");
-            }
-        }
+        // Route message through AI Agent for intelligent response
+        const { whatsAppAgentService } = await import("@/services/whatsapp-agent.service");
+        const agentResponse = await whatsAppAgentService.handleIncomingMessage(message, storeId);
+        // Send AI Agent response to customer
+        await whatsAppService.sendMessage(customer[0].phone, agentResponse);
+        // Save outbound message
+        await whatsAppService.saveMessage(storeId, customerId, agentResponse, "outbound");
     }
     catch (error) {
-        console.error("Error handling WhatsApp message:", error);
+        console.error("Error handling WhatsApp message with agent:", error);
         // Send error message to customer
-        const db = getDb();
-        const customer = await db
-            .select()
-            .from(customers)
-            .where(eq(customers.id, customerId));
-        if (customer.length > 0) {
-            try {
-                await whatsAppService.sendMessage(customer[0].phone, "Terjadi kesalahan dalam memproses pesanan Anda. Silakan coba lagi nanti atau hubungi admin.");
-            }
-            catch (innerError) {
-                console.error("Failed to send error message:", innerError);
-            }
+        try {
+            await whatsAppService.sendMessage(customer[0].phone, "Terjadi kesalahan dalam memproses pesan Anda. Silakan coba lagi nanti atau hubungi admin.");
+        }
+        catch (innerError) {
+            console.error("Failed to send error message:", innerError);
         }
     }
 }
 /**
- * Handle menu request
+ * Legacy: Handle menu request (kept for backwards compatibility)
  */
 async function handleMenuRequest(storeId, customerId, message) {
     if (!message)
